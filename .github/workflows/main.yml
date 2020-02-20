@@ -1,0 +1,20 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Get TLAPS
+      run: wget https://tla.msr-inria.inria.fr/tlaps/dist/current/tlaps-1.4.5-x86_64-linux-gnu-inst.bin
+    - name: Install TLAPS
+      run: |
+        chmod +x tlaps-1.4.5-x86_64-linux-gnu-inst.bin
+        ./tlaps-1.4.5-x86_64-linux-gnu-inst.bin -d tlaps
+    - name: Run TLAPS
+      run: tlaps/bin/tlapm --cleanfp -I tlaps/ tlaplus/BlockingQueue.tla
+
