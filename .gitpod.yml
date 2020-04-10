@@ -1,6 +1,9 @@
+image: lemmster/gitpod-dafny:latest
+  
 vscode:
   extensions:
     - alygin.vscode-tlaplus@1.5.0:G+Kce8pvXmhitCacF8sdNA==
+    - correctnessLab.dafny-vscode@0.17.1:y0vNEkuQw4SUFvPIFxLkEA==
  
 tasks:
   - init: git config --global alias.slog 'log --pretty=oneline --abbrev-commit'
