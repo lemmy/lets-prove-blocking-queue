@@ -4,6 +4,8 @@ This is a repository of provably deadlock-free blocking queue.
 
 This challenge was inspired by [lets-prove-leftpad](https://github.com/hwayne/lets-prove-leftpad) (from which this README and the contribution guide have been adopted).  However, while lets-prove-leftpad is about a sequential algorithm, this challenge is about a concurrent one.
 
+Related is also Dan Ricketts' [Teaching Concurrency](https://github.com/dricketts/teaching-concurrency).
+
 ## What is "provably-correct"?
 
 **Provably correct** is a guarantee that an algorithm satisfies given correctness properties, say deadlock freedom. You do this by providing a **proof** that a computer can check. If the proof is wrong, the computer will tell you that your algorithm is incorrect (wrt correctness properties). Or as Donald Knuth puts it: "[Beware of bugs in the above code; I have only proved it correct, not tried it.](https://www-cs-faculty.stanford.edu/~knuth/faq.html)" 
