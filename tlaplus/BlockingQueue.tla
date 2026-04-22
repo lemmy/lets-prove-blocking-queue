@@ -14,7 +14,8 @@ data == CHOOSE d : d \* Some data.
 VARIABLES buffer, waitC, waitP
 vars == <<buffer, waitC, waitP>>
 
-TypeOK == /\ Len(buffer) \in 0..BufCapacity
+TypeOK == /\ buffer \in Seq({data})
+          /\ Len(buffer) \in 0..BufCapacity
           /\ waitP \in SUBSET Producers
           /\ waitC \in SUBSET Consumers
 
