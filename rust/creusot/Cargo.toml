@@ -1,0 +1,32 @@
+[package]
+name = "blocking-queue-creusot"
+version = "0.2.0"
+edition = "2021"
+publish = false
+
+# This crate's only purpose is to host the Creusot proof of
+# deadlock-freedom for the bounded blocking queue. Like the Verus proof
+# in `../verus/`, it is a stand-alone abstract state machine: there is
+# no path/dep on the implementation crate at `..`, because Creusot
+# verifies the *protocol*, not the `std::sync::{Mutex, Condvar}` code.
+# The implementation is linked back to this proof informally, via the
+# `// === abstract transition: ... ===` comments inside `put` / `get`
+# in `../src/lib.rs`.
+#
+# `creusot-contracts` is a regular crates.io dependency: when the file
+# is compiled by stock `rustc` (i.e. plain `cargo check` / `cargo
+# build`), all of `#[requires]`, `#[ensures]`, `#[logic]`,
+# `proof_assert!`, etc. expand to no-ops, so the crate compiles cleanly
+# even without Creusot installed. Verification itself is run via
+# `cargo creusot`, which substitutes its own `creusot-rustc` for
+# `rustc` and discharges the proof obligations through Why3 + SMT
+# solvers (Alt-Ergo, Z3, CVC5).
+# Quiet `--check-cfg` warnings for the `creusot` cfg flag, which is set
+# by `creusot-rustc` (under `cargo creusot`) but not by stock `rustc`.
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(creusot)',
+] }
+
+[dependencies]
+creusot-contracts = "0.8"
