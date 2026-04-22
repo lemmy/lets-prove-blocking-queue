@@ -3,15 +3,80 @@ name: CI
 on: [push]
 
 jobs:
-  build:
-
+  tlaps:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Get TLAPS
-      run: wget -q https://github.com/tlaplus/tlapm/releases/download/1.6.0-pre/tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz
-    - name: Install TLAPS
-      run: tar -xzf tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz
-    - name: Run TLAPS
-      run: tlapm/bin/tlapm --cleanfp -I tlapm/ tlaplus/BlockingQueue.tla
+      - uses: actions/checkout@v4
+      - name: Get TLAPS
+        run: wget -q https://github.com/tlaplus/tlapm/releases/download/1.6.0-pre/tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz
+      - name: Install TLAPS
+        run: tar -xzf tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz
+      - name: Run TLAPS
+        run: tlapm/bin/tlapm --cleanfp -I tlapm/ tlaplus/BlockingQueue.tla
+
+  rust-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: cargo test
+        working-directory: rust
+        run: cargo test
+
+  loom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: cargo test --release (cfg loom)
+        working-directory: rust/loom
+        env:
+          RUSTFLAGS: --cfg loom
+        run: cargo test --release
+
+  verus:
+    runs-on: ubuntu-22.04
+    env:
+      # Pinned Verus binary release. The matching Rust toolchain
+      # (`VERUS_TOOLCHAIN`) is read from `version.json` inside the zip
+      # and installed via rustup below.
+      VERUS_VERSION: 0.2026.04.19.6f7d4de
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Verus
+        run: |
+          wget -q "https://github.com/verus-lang/verus/releases/download/release/${VERUS_VERSION}/verus-${VERUS_VERSION}-x86-linux.zip"
+          unzip -q "verus-${VERUS_VERSION}-x86-linux.zip"
+          mv verus-x86-linux verus
+          echo "$GITHUB_WORKSPACE/verus" >> "$GITHUB_PATH"
+      - name: Install Verus' Rust toolchain
+        run: |
+          toolchain=$(jq -r .verus.toolchain verus/version.json)
+          echo "Verus expects toolchain $toolchain"
+          rustup toolchain install "$toolchain"
+      - name: Run Verus
+        working-directory: rust/verus
+        run: verus blocking_queue.rs
+
+  creusot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Run Creusot
+        working-directory: rust/creusot
+        # `nix shell` builds Creusot + its OCaml/Why3/SMT-solver
+        # dependencies on first run; subsequent runs hit the Nix store
+        # cache. `cargo creusot` then translates `src/lib.rs` to Why3
+        # and discharges every proof obligation through the bundled
+        # provers (Alt-Ergo, Z3, CVC5).
+        #
+        # `NIXPKGS_ALLOW_UNFREE=1` + `--impure` are required because
+        # Alt-Ergo ships under OCamlPro's non-commercial license, which
+        # nixpkgs classifies as unfree and otherwise refuses to build.
+        env:
+          NIXPKGS_ALLOW_UNFREE: "1"
+        run: nix shell --impure 'github:creusot-rs/creusot' --command cargo creusot

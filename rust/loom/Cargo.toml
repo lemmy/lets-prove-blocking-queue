@@ -1,0 +1,25 @@
+[package]
+name = "blocking-queue-loom"
+version = "0.2.0"
+edition = "2021"
+publish = false
+
+# This crate's only purpose is to host the loom-instrumented test
+# harness for `blocking_queue::BlockingQueue`. It depends on the
+# program crate at `../` by path; running its tests under
+# `RUSTFLAGS="--cfg loom"` rebuilds both crates with the `loom` cfg
+# set, which makes `../src/lib.rs` swap `std::sync::*` / `std::thread`
+# for loom's instrumented mocks.
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(loom)',
+] }
+
+[dependencies]
+blocking-queue = { path = ".." }
+
+# Loom is needed only when actually running the loom test harness, i.e.
+# under `RUSTFLAGS="--cfg loom"`. Without that flag `tests/loom.rs` is
+# `#![cfg(loom)]`-stripped to an empty file and loom is not pulled in.
+[target.'cfg(loom)'.dependencies]
+loom = "0.7"

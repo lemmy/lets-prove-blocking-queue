@@ -1,0 +1,5 @@
+# Rust build artifacts
+rust/**/target/
+
+# Verus compiled binary
+rust/verus/blocking_queue

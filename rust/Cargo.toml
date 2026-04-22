@@ -1,0 +1,29 @@
+[package]
+name = "blocking-queue"
+version = "0.2.0"
+edition = "2021"
+
+# Quiet `--check-cfg` warnings for the two custom cfg flags this crate
+# uses:
+#
+#   * `verus_keep_ghost` is set by the Verus toolchain when it includes
+#     `src/lib.rs` from `../verus/blocking_queue.rs` via `#[path]`. It
+#     is what gates the `#[verifier::external]` annotations on the
+#     implementation.
+#   * `loom` is set manually via `RUSTFLAGS="--cfg loom"` (typically
+#     when running the loom test suite from `../loom/`). Under that
+#     cfg, the `pub use` block in `src/lib.rs` swaps `std::sync::*` /
+#     `std::thread` for loom's instrumented mocks.
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(verus_keep_ghost)',
+    'cfg(loom)',
+] }
+
+# Loom is pulled in only when the `loom` cfg flag is set, so plain
+# `cargo build` / `cargo test` does not download or compile it. The
+# loom-instrumented test crate at `../loom/` depends on this crate by
+# path and runs under `RUSTFLAGS="--cfg loom"`, which is what activates
+# this dependency.
+[target.'cfg(loom)'.dependencies]
+loom = "0.7"
