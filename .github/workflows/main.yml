@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Get TLAPS
       run: wget https://tla.msr-inria.inria.fr/tlaps/dist/current/tlaps-1.4.5-x86_64-linux-gnu-inst.bin
     - name: Install TLAPS
