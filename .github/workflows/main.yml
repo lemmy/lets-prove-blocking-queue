@@ -10,11 +10,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Get TLAPS
-      run: wget https://tla.msr-inria.inria.fr/tlaps/dist/current/tlaps-1.4.5-x86_64-linux-gnu-inst.bin
+      run: wget -q https://github.com/tlaplus/tlapm/releases/download/1.6.0-pre/tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz
     - name: Install TLAPS
-      run: |
-        chmod +x tlaps-1.4.5-x86_64-linux-gnu-inst.bin
-        ./tlaps-1.4.5-x86_64-linux-gnu-inst.bin -d tlaps
+      run: tar -xzf tlapm-1.6.0-pre-x86_64-linux-gnu.tar.gz
     - name: Run TLAPS
-      run: tlaps/bin/tlapm --cleanfp -I tlaps/ tlaplus/BlockingQueue.tla
-
+      run: tlapm/bin/tlapm --cleanfp -I tlapm/ tlaplus/BlockingQueue.tla
